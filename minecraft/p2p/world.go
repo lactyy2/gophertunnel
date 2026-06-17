@@ -206,7 +206,7 @@ func (c Connection) Address() (string, error) {
 const (
 	// TransportLayerRakNet indicates that the World is using RakNet as the transport layer.
 	// It is not seen anymore for regular worlds since RakNet is no longer supported by the clients.
-	TransportLayerRakNet = iota
+	TransportLayerRakNet = iota << 1
 	// TransportLayerNetherNet indicates that the World is using NetherNet as the transport layer.
 	TransportLayerNetherNet
 )
