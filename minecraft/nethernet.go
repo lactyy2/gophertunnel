@@ -40,7 +40,7 @@ var _ packet.TransportCapabilities = (*nethernet.Conn)(nil)
 // DialContext establishes a connection with the remote NetherNet network using the address.
 func (n NetherNet) DialContext(ctx context.Context, address string) (net.Conn, error) {
 	if n.Signaling == nil {
-		n.Signaling = endpoint.NewClient()
+		n.Signaling = defaultSignalingClient
 	}
 	if n.Dialer.Log == nil && n.Log != nil {
 		n.Dialer.Log = n.Log
@@ -83,19 +83,24 @@ func (n NetherNet) DialContextIdentity(ctx context.Context, address string, toke
 // The address must be an HTTP/HTTPS URL with a port.
 func (n NetherNet) PingContext(ctx context.Context, address string) ([]byte, error) {
 	if n.Signaling == nil {
-		n.Signaling = endpoint.ClientConfig{
-			ClientInfo: endpoint.ClientInfo{
-				Version:  protocol.CurrentVersion,
-				Protocol: protocol.CurrentProtocol,
-				Platform: int(protocol.DeviceAndroid),
-			},
-		}.New()
+		n.Signaling = defaultSignalingClient
 	}
 	if p, ok := n.Signaling.(pinger); ok {
 		return p.PingContext(ctx, address)
 	}
 	return nil, errors.New("minecraft: NetherNet.PingContext: not supported")
 }
+
+// defaultSignalingClient is the default [nethernet.Signaling] implementation used by [NetherNet.DialContext]
+// and [NetherNet.PingContext]. It is shared by both methods so that the network ID remains consistent
+// across calls.
+var defaultSignalingClient = endpoint.ClientConfig{
+	ClientInfo: endpoint.ClientInfo{
+		Version:  protocol.CurrentVersion,
+		Protocol: protocol.CurrentProtocol,
+		Platform: int(protocol.DeviceAndroid),
+	},
+}.New()
 
 // Ensure that the default Signaling Client implementation used by NetherNet satisfies
 // the pinger interface.
